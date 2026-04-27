@@ -1,0 +1,12 @@
+.venv
+figures/*
+__pycache__/
+*.pyc
+.DS_Store
+
+*.pdf
+*.png
+*.jpg
+*.json
+*.csv
+*.pkl
