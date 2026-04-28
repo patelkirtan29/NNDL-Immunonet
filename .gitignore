@@ -12,3 +12,6 @@ __pycache__/
 *.pkl
 *.v2
 *.keras
+ipynbs/*
+*.npy
+*.svg
