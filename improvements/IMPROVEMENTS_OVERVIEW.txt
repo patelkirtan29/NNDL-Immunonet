@@ -1,0 +1,299 @@
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                                                                              ║
+║                   ImmunoNet Improvements Suite - OVERVIEW                    ║
+║                                                                              ║
+║           Addressing Proposal Gaps & Improving Cross-Dataset Transfer        ║
+║                                                                              ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+PROJECT SUMMARY
+═══════════════════════════════════════════════════════════════════════════════
+
+Original Goal:  Classify 6 T-cell states from scRNA-seq (GSE108989)
+Problem:        Models fail on different dataset (GSE126030) - 8% vs 70% target
+Root Cause:     Batch effects + label mismatch + overfitting
+
+Solution:       5-step improvement pipeline addressing each issue
+
+
+KEY IMPROVEMENTS
+═══════════════════════════════════════════════════════════════════════════════
+
+✅ STEP 1: LABEL VALIDATION (gse126030_reclustering.py)
+   What:  Re-cluster GSE126030 from "resting/activated" → 6 proper classes
+   How:   kNN on training signatures + confidence filtering
+   Output: gse126030_reclustered_labels.csv
+   Impact: Now can fairly evaluate models on labeled cross-dataset
+
+✅ STEP 2: BATCH CORRECTION (batch_effect_removal.py)  
+   What:  Remove systematic differences between GSE108989 & GSE126030
+   How:   Mean-centering, Standardization, ComBat (3 methods)
+   Output: Corrected datasets + batch separation score (3-4x improvement)
+   Impact: Batches become well-mixed (easier for models to generalize)
+
+✅ STEP 3: IMPROVED MODELS (domain_adaptive_models.py)
+   What:  Three new architectures designed for cross-dataset transfer
+   How:   
+     - Domain-Adaptive SVM: Instance weighting by target domain similarity
+     - Transformer: Multi-head attention learns gene interactions
+     - GNN-SVM: Co-expression graph + feature enrichment
+   Output: 3 trained models + cross-dataset F1 comparison
+   Impact: Expected 5-6x improvement in generalization (0.08 → 0.30-0.50)
+
+✅ STEP 4: STATISTICAL VALIDATION (statistical_tests.py)
+   What:  Rigorous testing of all proposal criteria
+   How:   Wilcoxon, Fisher's exact, GSEA tests
+   Output: P-values + significance assessment
+   Impact: Validates that improvements are statistically meaningful
+
+✅ STEP 5: COMPREHENSIVE REPORT (generate_report.py)
+   What:  Proposal vs Results analysis with recommendations
+   How:   Compares all original goals to achieved results
+   Output: PROPOSAL_VS_RESULTS_REPORT.md + JSON summary
+   Impact: Clear actionable recommendations for next phase
+
+
+EXPECTED IMPROVEMENTS (After Running All 5 Steps)
+═══════════════════════════════════════════════════════════════════════════════
+
+Metric                          Before      Target      After (Expected)
+─────────────────────────────────────────────────────────────────────────────
+Cross-Dataset F1                0.08 (8%)   ≥0.70       0.30-0.50 (30-50%)
+Test Set F1                     0.89        ≥0.80       0.88-0.90 ✓
+Batch Separation Score          ~0.35       ≤0.15       ~0.10-0.15 ✓
+Gene Marker Overlap (Naive)     57%         70%         60-70% (good)
+Gene Marker Overlap (Effector)  17%         70%         20-40% (improved)
+Statistical Significance        N/A         p<0.05      ✓ (all p<0.05)
+
+
+FILE STRUCTURE
+═══════════════════════════════════════════════════════════════════════════════
+
+improvements/
+│
+├── 1_label_validation/
+│   ├── gse126030_reclustering.py
+│   └── label_validation_output/
+│       ├── gse126030_reclustered_labels.csv  ← New labels for GSE126030
+│       ├── reclustering_report.json
+│       └── reclustering_visualization.png
+│
+├── 2_batch_correction/
+│   ├── batch_effect_removal.py
+│   └── batch_correction_output/
+│       ├── gse108989_corrected_*.npy
+│       ├── gse126030_corrected_*.npy
+│       ├── batch_correction_comparison.png  ← PCA before/after
+│       └── batch_correction_report.json
+│
+├── 3_domain_adaptation/
+│   ├── domain_adaptive_models.py
+│   └── improved_models_output/
+│       ├── da_svm_model.pkl               ← Domain-adaptive SVM
+│       ├── transformer_model.keras        ← Transformer classifier
+│       ├── gnn_svm_model.pkl              ← GNN-enhanced SVM
+│       └── improved_models_results.json   ← F1 comparisons
+│
+├── 4_statistical_validation/
+│   ├── statistical_tests.py
+│   └── statistical_validation_output/
+│       └── statistical_tests_results.json  ← p-values, test results
+│
+├── 5_improved_models/
+│   └── (Placeholder for comparison outputs)
+│
+├── 6_results_report/
+│   ├── generate_report.py
+│   └── report_output/
+│       ├── PROPOSAL_VS_RESULTS_REPORT.md ← ⭐ MAIN REPORT
+│       └── report_summary.json
+│
+├── run_all_improvements.sh              ← Bash script to run all steps
+├── IMPLEMENTATION_CHECKLIST.md          ← Verification checklist
+├── README.md                            ← Detailed documentation
+└── IMPROVEMENTS_OVERVIEW.txt            ← THIS FILE
+
+
+QUICK START (5 MINUTES)
+═══════════════════════════════════════════════════════════════════════════════
+
+1. Navigate to improvements folder:
+   cd /Users/kirtan/Projects/NNDL/improvements
+
+2. Run all improvements:
+   bash run_all_improvements.sh
+
+   OR run manually (step-by-step):
+   python 1_label_validation/gse126030_reclustering.py
+   python 2_batch_correction/batch_effect_removal.py
+   python 3_domain_adaptation/domain_adaptive_models.py
+   python 4_statistical_validation/statistical_tests.py
+   python 6_results_report/generate_report.py
+
+3. Check results:
+   cat 6_results_report/report_output/PROPOSAL_VS_RESULTS_REPORT.md
+
+
+KEY METRICS TO MONITOR
+═══════════════════════════════════════════════════════════════════════════════
+
+After Step 1 (Label Validation):
+  → Check: gse126030_reclustered_labels.csv has meaningful class distribution
+  → Target: ~60% cells with confidence ≥0.6
+
+After Step 2 (Batch Correction):
+  → Check: batch_correction_comparison.png shows mixed batches in PCA
+  → Target: Batch separation score reduced to ≤0.15
+
+After Step 3 (Improved Models):
+  → Check: improved_models_results.json cross-dataset F1 > 0.25
+  → Target: GNN-SVM or Transformer with cross-dataset F1 ≥ 0.30
+
+After Step 4 (Statistical Tests):
+  → Check: Wilcoxon p-values (model comparison)
+  → Check: Fisher p-values (gene marker overlap)
+  → Target: All p-values < 0.05
+
+After Step 5 (Report):
+  → Check: PROPOSAL_VS_RESULTS_REPORT.md generated
+  → Contains: Recommendations for GNN/Transformer next phase
+
+
+TROUBLESHOOTING GUIDE
+═══════════════════════════════════════════════════════════════════════════════
+
+Issue: Step 1 gives low confidence (<0.5)
+  → Cause: kNN can't discriminate between classes
+  → Fix: Check step2_cleaned.csv for corruption, or increase k value
+
+Issue: Step 2 shows no batch effect improvement
+  → Cause: Biological differences > batch effects
+  → Fix: Try ComBat method instead of mean-centering
+
+Issue: Step 3 - Cross-dataset F1 still <0.15
+  → Cause: Domain shift too large or labels not good
+  → Fix: Check Step 1 label quality, try stricter batch correction
+
+Issue: TensorFlow not found
+  → Fix: pip install tensorflow
+
+Issue: scanpy not found (for ComBat)
+  → Fix: pip install scanpy
+
+
+SUCCESS CHECKLIST
+═══════════════════════════════════════════════════════════════════════════════
+
+Before Running:
+  ☐ In virtual environment (.venv activated)
+  ☐ All step3_*.npy files exist
+  ☐ step2_cleaned.csv exists
+  ☐ gse126030_preprocessed.npy exists
+  
+After Step 1:
+  ☐ gse126030_reclustered_labels.csv created
+  ☐ Mean confidence > 0.55
+  ☐ Reasonable class distribution
+  
+After Step 2:
+  ☐ Corrected data files exist
+  ☐ Batch separation score improved 3-4x
+  ☐ PCA visualization shows mixed batches
+  
+After Step 3:
+  ☐ 3 model files created (SVM, Transformer, GNN)
+  ☐ Cross-dataset F1 improved from 0.08
+  ☐ Improved results JSON contains all 3 models
+  
+After Step 4:
+  ☐ statistical_tests_results.json created
+  ☐ Wilcoxon p-values present
+  ☐ Fisher p-values present
+  
+After Step 5:
+  ☐ PROPOSAL_VS_RESULTS_REPORT.md generated
+  ☐ Report contains all 5 sections
+  ☐ Recommendations clear for next phase
+
+
+INTERPRETING THE MAIN REPORT
+═══════════════════════════════════════════════════════════════════════════════
+
+Open: 6_results_report/report_output/PROPOSAL_VS_RESULTS_REPORT.md
+
+Contains:
+  1. Executive Summary
+     → High-level overview of what was achieved
+  
+  2. Proposal Success Criteria Scorecard
+     → Compares each original goal to actual results
+     → Shows what PASSED, FAILED, or PARTIAL
+  
+  3. Root Cause Analysis
+     → Explains WHY cross-dataset failed
+     → Batch effects, label mismatch, overfitting identified
+  
+  4. Improvements Implemented
+     → Describes each of the 5 steps
+     → Expected impact of each
+  
+  5. Next Steps Recommendations
+     → SHORT-TERM: Before GNN/Transformer
+     → MID-TERM: Refinements
+     → LONG-TERM: Advanced architectures
+
+
+WHEN TO PROCEED TO GNN/TRANSFORMER
+═══════════════════════════════════════════════════════════════════════════════
+
+✅ Proceed if:
+  - Cross-dataset F1 ≥ 0.30 (improved from 0.08)
+  - Batch correction effective (separation ≤0.15)
+  - Gene markers validated with SHAP
+  - All improvements statistically significant (p<0.05)
+
+⏸️ Debug more if:
+  - Cross-dataset F1 < 0.20 (improvement too small)
+  - Batch separation still > 0.25 (correction not working)
+  - Gene marker overlap < 50% (labels not good)
+
+After Validation → Build full GNN/Transformer architectures:
+  1. Graph Neural Network (PyG/DGL)
+  2. Vision Transformer (ViT adapted for genomics)  
+  3. Contrastive learning (SimCLR for domain alignment)
+
+
+DELIVERABLES SUMMARY
+═══════════════════════════════════════════════════════════════════════════════
+
+For Presentation:
+  📊 PROPOSAL_VS_RESULTS_REPORT.md
+  📊 batch_correction_comparison.png (before/after batch effects)
+  📊 improved_models_results.json (model comparison table)
+  📊 statistical_tests_results.json (p-values & significance)
+
+For Further Development:
+  📁 Corrected datasets (for future models)
+  📁 Re-clustered GSE126030 labels (for validation)
+  📁 Trained improved models (SVM, Transformer, GNN)
+  📁 Full statistical analysis (Wilcoxon, Fisher, GSEA)
+
+
+CONTACT & QUESTIONS
+═══════════════════════════════════════════════════════════════════════════════
+
+For issues with:
+  - Label validation → Check Step 1: IMPLEMENTATION_CHECKLIST.md
+  - Batch correction → Check Step 2: IMPLEMENTATION_CHECKLIST.md
+  - Model training → Check Step 3: IMPLEMENTATION_CHECKLIST.md
+  - Statistical tests → Check Step 4: IMPLEMENTATION_CHECKLIST.md
+  - Report generation → Check Step 5: IMPLEMENTATION_CHECKLIST.md
+
+All scripts have detailed comments explaining what each part does.
+
+
+═══════════════════════════════════════════════════════════════════════════════
+Last Updated: April 2026
+Status: Ready to Execute
+Estimated Runtime: 30-40 minutes
+═══════════════════════════════════════════════════════════════════════════════

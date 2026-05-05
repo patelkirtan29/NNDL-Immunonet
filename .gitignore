@@ -10,3 +10,8 @@ __pycache__/
 *.json
 *.csv
 *.pkl
+*.v2
+*.keras
+ipynbs/*
+*.npy
+*.svg
